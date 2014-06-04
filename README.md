@@ -8,7 +8,7 @@ The examples can be built for Windows and Linux. For windows platform, i used Vi
 
 Prerequisites:
 --------------
-* The examples currently run for NVIDIA GPUs since the code searches for one. You can change that to look for AMD GPU or any other acceleration device. For the given code, to compile as is you would need CUDA toolkit installed.
+* The examples currently run on NVIDIA GPUs only since i am searching only for NVIDIA platform. You can change that to look for AMD GPU or any other acceleration device. To compile the code as is, you would need CUDA toolkit installation.
 * GLFW development files are required.
 * GLEW developement files are required.
 
