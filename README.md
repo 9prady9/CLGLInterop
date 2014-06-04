@@ -1,8 +1,9 @@
-CLGLInterop
-===========
+OpenCL-OpenGL Interop Examples
+==============================
 
-OpenCL-OpenGL Interop examples
+More examples will be added progressively. Current list of examples is given below.
 
+* Fractal - fractal images are generated using OpenCL and then rendered onto a OpenGL window using texture(the texture is shared between the OCL and OGL contexts).
 
 The examples can be built for Windows and Linux. For windows platform, i used Visual Studio 2012 as the development environment. For linux platform, i used standard makefile based build.
 
