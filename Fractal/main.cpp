@@ -154,7 +154,7 @@ int main(void)
         params.k = Kernel(params.p, "fractal");
         // create opengl stuff
 #ifdef WINDOWS_OS
-        rparams.prg = initShaders(".vertex.glsl","fragment.glsl");
+        rparams.prg = initShaders("vertex.glsl","fragment.glsl");
 #else
         rparams.prg = initShaders("./Fractal/vertex.glsl","./Fractal/fragment.glsl");
 #endif
