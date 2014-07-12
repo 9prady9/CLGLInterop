@@ -1,11 +1,27 @@
+#if defined(_WIN32) || defined(_WIN64) || defined(_MSC_VER) ||  defined(_WINDOWS_) || defined(__WIN32__) || defined(__WINDOWS__)
+#define WINDOWS_OS
+#elif defined(__APPLE__) || defined(__MACH__)
+#define APPLE_OS
+#else
+#define LINUX_OS
+#endif
+
 #include <GL/glew.h>
 
 #include "OpenCLUtil.h"
 #define __CL_ENABLE_EXCEPTIONS
 #include <CL/cl.hpp>
 
+#ifdef WINDOWS_OS
 #define GLFW_EXPOSE_NATIVE_WIN32
 #define GLFW_EXPOSE_NATIVE_WGL
+#endif
+
+#ifdef LINUX_OS
+#define GLFW_EXPOSE_NATIVE_X11
+#define GLFW_EXPOSE_NATIVE_GLX
+#endif
+
 #include <GLFW/glfw3.h>
 #include <GLFW/glfw3native.h>
 
@@ -101,15 +117,25 @@ int main(void)
     }
 
     cl_int errCode;
-    try { 
+    try {
         Platform lPlatform = getPlatform(PLATFORM,errCode);
         // Select the default platform and create a context using this platform and the GPU
+#ifdef LINUX_OS
+        cl_context_properties cps[] = {
+            CL_GL_CONTEXT_KHR, (cl_context_properties)glfwGetGLXContext(window),
+            CL_GLX_DISPLAY_KHR, (cl_context_properties)glfwGetX11Display(),
+            CL_CONTEXT_PLATFORM, (cl_context_properties)lPlatform(),
+            0
+        };
+#endif
+#ifdef WINDOWS_OS
         cl_context_properties cps[] = {
             CL_GL_CONTEXT_KHR, (cl_context_properties)glfwGetWGLContext(window),
             CL_WGL_HDC_KHR, (cl_context_properties)GetDC(glfwGetWin32Window(window)),
-            CL_CONTEXT_PLATFORM, (cl_context_properties)lPlatform(), 
-            0 
+            CL_CONTEXT_PLATFORM, (cl_context_properties)lPlatform(),
+            0
         };
+#endif
         Context context( CL_DEVICE_TYPE_GPU, cps);
         // Get a list of devices on this platform
         std::vector<Device> devices = context.getInfo<CL_CONTEXT_DEVICES>();
@@ -119,11 +145,19 @@ int main(void)
         }
         // Create a command queue and use the first device
         params.q = CommandQueue(context, params.d);
+#ifdef WINDOWS_OS
         params.p = getProgram(context,"fractal.cl",errCode);
+#else
+        params.p = getProgram(context,"./Fractal/fractal.cl",errCode);
+#endif
         params.p.build(devices);
         params.k = Kernel(params.p, "fractal");
         // create opengl stuff
-        rparams.prg = initShaders("vertex.glsl","fragment.glsl");
+#ifdef WINDOWS_OS
+        rparams.prg = initShaders(".vertex.glsl","fragment.glsl");
+#else
+        rparams.prg = initShaders("./Fractal/vertex.glsl","./Fractal/fragment.glsl");
+#endif
         rparams.tex = createTexture2D(wind_width,wind_height);
         GLuint vbo  = createBuffer(12,vertices,GL_STATIC_DRAW);
         GLuint tbo  = createBuffer(8,texcords,GL_STATIC_DRAW);
