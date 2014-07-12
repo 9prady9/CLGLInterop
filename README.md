@@ -28,10 +28,7 @@ If the above stated settings are appropriate, the example should build just fine
 
 Linux
 -----
-'Makefile' coming soon. 
-
-There are only two lines in the code that needs to be changed to compile and run the examples on linux. I have already tested the code on linux. I will push those changes as soon as the makefile is ready.
-
+Just run the command `make` from root of the repository.
 
 ```Note
 All examples are by default built for 64-bit machines. If you have need 32-bit executables, please modify the necessary options and rebuild the source files.
