@@ -4,13 +4,10 @@ LD	:= g++
 OUT			:= bin
 OBJ_DIR		:= $(OUT)/objs
 INC_DIRS	:= $(CUDA_PATH)/include
-INC_DIRS	+= $(AF_PATH)/include
-LIB_DIRS	:= $(AF_PATH)/lib64
 LIBRARIES	:= glfw
 LIBRARIES	+= GL
 LIBRARIES	+= GLEW
 LIBRARIES	+= OpenCL
-LIBRARIES	+= afcl
 
 INC_FLAGS	:= $(patsubst %,-I%, $(INC_DIRS))
 CPP_FLAGS	:= $(patsubst %,-L%, $(LIB_DIRS))
