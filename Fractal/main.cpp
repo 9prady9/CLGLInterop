@@ -217,11 +217,15 @@ int main(void)
     return 0;
 }
 
+inline unsigned divup(unsigned a, unsigned b)
+{
+    return (a+b-1)/b;
+}
+
 void processTimeStep()
 {
     cl::Event ev;
     try {
-        glFlush();
         glFinish();
 
         std::vector<Memory> objs;
@@ -234,15 +238,16 @@ void processTimeStep()
             std::cout<<"Failed acquiring GL object: "<<res<<std::endl;
             return;
         }
+        NDRange local(16, 16);
+        NDRange global( 16 * divup(params.dims[0], 16),
+                        16 * divup(params.dims[1], 16));
         // set kernel arguments
         params.k.setArg(0,params.tex);
         params.k.setArg(1,params.i);
         params.k.setArg(2,(int)params.dims[0]);
         params.k.setArg(3,(int)params.dims[1]);
         params.k.setArg(4,(int)params.dims[2]);
-        params.q.enqueueNDRangeKernel(params.k,cl::NullRange,
-                                       NDRange(params.dims[0],params.dims[1]),
-                                       NDRange(16,16));
+        params.q.enqueueNDRangeKernel(params.k,cl::NullRange, global, local);
         // release opengl object
         res = params.q.enqueueReleaseGLObjects(&objs);
         ev.wait();

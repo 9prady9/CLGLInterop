@@ -9,7 +9,7 @@ bool isInsideJulia(float2 coords,int set)
     // Julia Set
 	float2 transformed = 2*(coords-(float2)0.5f);
 
-    for(unsigned int k=0; k<1000; k++)
+    for(unsigned int k=0; k<18; k++)
     {
         temp.s0 = (transformed.s0*transformed.s0-transformed.s1*transformed.s1) + C.s0;
         temp.s1 = 2*transformed.s0*transformed.s1 + C.s1;
@@ -31,10 +31,9 @@ __kernel void fractal( __write_only image2d_t out,
     int gx = get_global_id(0);
     int gy = get_global_id(1);
     int2 pos = (int2)(gx,gy);
-    if (gx>=dim0 || gy>=dim1) {
-        return;
+    if (gx<dim0 && gy<dim1) {
+        float2 normalizedPos = (float2)(pos.s0/(float)dim0,pos.s1/(float)dim1);
+        float4 opxl = isInsideJulia(normalizedPos,0) ? orange : white;
+        write_imagef (out,pos,opxl);
     }
-	float2 normalizedPos = (float2)(pos.s0/(float)dim0,pos.s1/(float)dim1);
-    float4 opxl = isInsideJulia(normalizedPos,0) ? orange : white;
-    write_imagef (out,pos,opxl);
 }
