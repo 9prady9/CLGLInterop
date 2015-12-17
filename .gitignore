@@ -2,3 +2,4 @@ bin64/
 temp/
 *.sdf
 *.suo
+bin/

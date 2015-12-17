@@ -10,7 +10,7 @@
 
 #include "OpenCLUtil.h"
 #define __CL_ENABLE_EXCEPTIONS
-#include <CL/cl.hpp>
+#include "cl.hpp"
 
 #ifdef WINDOWS_OS
 #define GLFW_EXPOSE_NATIVE_WIN32
@@ -63,7 +63,7 @@ typedef struct {
     Program p;
     Kernel k;
     Buffer i;
-    Image2DGL tex;
+    ImageGL tex;
     cl::size_t<3> dims;
 } process_params;
 
@@ -100,25 +100,27 @@ int main(void)
 {
     GLFWwindow* window;
 
-    glfwSetErrorCallback(glfw_error_callback);
-
     if (!glfwInit())
         return 255;
+
+    glfwSetErrorCallback(glfw_error_callback);
 
     window = glfwCreateWindow(wind_width,wind_height,"CLGL",NULL,NULL);
     if (!window) {
         glfwTerminate();
         return 254;
     }
+
     glfwMakeContextCurrent(window);
     GLenum res = glewInit();
     if (res!=GLEW_OK) {
         std::cout<<"Error Initializing GLEW | Exiting"<<std::endl;
+        return 253;
     }
 
     cl_int errCode;
     try {
-        Platform lPlatform = getPlatform(PLATFORM,errCode);
+        Platform lPlatform = getPlatform();
         // Select the default platform and create a context using this platform and the GPU
 #ifdef LINUX_OS
         cl_context_properties cps[] = {
@@ -136,12 +138,12 @@ int main(void)
             0
         };
 #endif
-        Context context( CL_DEVICE_TYPE_GPU, cps);
+        Context context(CL_DEVICE_TYPE_GPU, cps);
         // Get a list of devices on this platform
         std::vector<Device> devices = context.getInfo<CL_CONTEXT_DEVICES>();
         params.d = devices[0];
         if (!checkExtnAvailability(params.d,CL_GL_SHARING_EXT)) {
-            return 253;
+            return 251;
         }
         // Create a command queue and use the first device
         params.q = CommandQueue(context, params.d);
@@ -181,10 +183,10 @@ int main(void)
         glBindBuffer(GL_ELEMENT_ARRAY_BUFFER,ibo);
         glBindVertexArray(0);
         // create opengl texture reference using opengl texture
-        params.tex = Image2DGL(context,CL_MEM_READ_WRITE,GL_TEXTURE_2D,0,rparams.tex,&errCode);
+        params.tex = ImageGL(context,CL_MEM_READ_WRITE,GL_TEXTURE_2D,0,rparams.tex,&errCode);
         if (errCode!=CL_SUCCESS) {
             std::cout<<"Failed to create OpenGL texture refrence: "<<errCode<<std::endl;
-            return 252;
+            return 250;
         }
         // create opencl input and output buffers
         params.i = Buffer(context,CL_MEM_READ_ONLY,sizeof(cl_uchar4)*wind_width*wind_height);
@@ -195,6 +197,7 @@ int main(void)
         std::cout << error.what() << "(" << error.err() << ")" << std::endl;
         std::string val = params.p.getBuildInfo<CL_PROGRAM_BUILD_LOG>(params.d);
         std::cout<<"Log:\n"<<val<<std::endl;
+        return 249;
     }
 
     glfwSetKeyCallback(window,glfw_key_callback);
@@ -236,7 +239,7 @@ void processTimeStep()
         ev.wait();
         if (res!=CL_SUCCESS) {
             std::cout<<"Failed acquiring GL object: "<<res<<std::endl;
-            return;
+            exit(248);
         }
         NDRange local(16, 16);
         NDRange global( 16 * divup(params.dims[0], 16),
@@ -253,7 +256,7 @@ void processTimeStep()
         ev.wait();
         if (res!=CL_SUCCESS) {
             std::cout<<"Failed releasing GL object: "<<res<<std::endl;
-            return;
+            exit(247);
         }
         params.q.finish();
     } catch(Error err) {

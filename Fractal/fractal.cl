@@ -1,9 +1,10 @@
 
-constant float2 setK[] = {-0.618f,0.0f};
+constant float2 setK = (float2)(-0.618f,0.0f);
 
 bool isInsideJulia(float2 coords,int set)
 {
-	float2 C = setK[set];
+    //FIXME parameter set is not used right now
+	float2 C = setK;
     float2 temp;
     // Transform params into (-1,1) range // 1.5 is scale factor
     // Julia Set
@@ -20,11 +21,11 @@ bool isInsideJulia(float2 coords,int set)
     return true;
 }
 
-__kernel void fractal( __write_only image2d_t out,
-                    __global const uchar4* in,
-                    int dim0, int dim1, int dim2)
+kernel
+void fractal(write_only image2d_t out,
+             global const uchar4* in,
+             int dim0, int dim1, int dim2)
 {
-	const int iterations = 100;
 	float4 orange = (float4)(1.0f,0.8f,0,1.0f);
 	float4 white = (float4)(1.0f,0.9f,0.9f,1.0f);
     // dims 0 - width, 1 - height, 2 - channels

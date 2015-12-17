@@ -22,7 +22,8 @@ Platform getPlatform(std::string pName, cl_int &error)
         int found = -1;
         for(PlatformIter it=platforms.begin(); it<platforms.end(); ++it) {
             std::string temp = it->getInfo<CL_PLATFORM_NAME>();
-            if (temp==pName) {
+            std::cout<<" Current platform : "<<temp<<std::endl;
+            if (temp.find(pName)!=std::string::npos) {
                 found = it - platforms.begin();
                 std::cout<<"Found platform: "<<temp<<std::endl;
                 break;
@@ -39,6 +40,30 @@ Platform getPlatform(std::string pName, cl_int &error)
         error = err.err();
     }
     return ret_val;
+}
+
+
+Platform getPlatform()
+{
+    cl_int errCode;
+    Platform plat = getPlatform(NVIDIA_PLATFORM, errCode);
+    if (errCode != CL_SUCCESS) {
+        Platform plat = getPlatform(AMD_PLATFORM, errCode);
+        if (errCode != CL_SUCCESS) {
+            Platform plat = getPlatform(INTEL_PLATFORM, errCode);
+            if (errCode != CL_SUCCESS) {
+                Platform plat = getPlatform(APPLE_PLATFORM, errCode);
+                if (errCode != CL_SUCCESS) {
+                    exit(252);
+                } else {
+                    return plat;
+                }
+            } else
+                return plat;
+        } else
+            return plat;
+    }
+    return plat;
 }
 
 bool checkExtnAvailability(Device pDevice, std::string pName)
