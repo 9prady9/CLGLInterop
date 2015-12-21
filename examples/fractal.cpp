@@ -1,23 +1,15 @@
-#if defined(_WIN32) || defined(_WIN64) || defined(_MSC_VER) ||  defined(_WINDOWS_) || defined(__WIN32__) || defined(__WINDOWS__)
-#define WINDOWS_OS
-#elif defined(__APPLE__) || defined(__MACH__)
-#define APPLE_OS
-#else
-#define LINUX_OS
-#endif
-
 #include <GL/glew.h>
 
 #include "OpenCLUtil.h"
 #define __CL_ENABLE_EXCEPTIONS
 #include "cl.hpp"
 
-#ifdef WINDOWS_OS
+#ifdef OS_WIN
 #define GLFW_EXPOSE_NATIVE_WIN32
 #define GLFW_EXPOSE_NATIVE_WGL
 #endif
 
-#ifdef LINUX_OS
+#ifdef OS_LNX
 #define GLFW_EXPOSE_NATIVE_X11
 #define GLFW_EXPOSE_NATIVE_GLX
 #endif
@@ -40,7 +32,6 @@ typedef unsigned int uint;
 
 static int wind_width = 640;
 static int wind_height= 480;
-static int channels   = 4;
 
 static const float matrix[16] = {
     1.0f, 0.0f, 0.0f, 0.0f,
@@ -122,7 +113,7 @@ int main(void)
     try {
         Platform lPlatform = getPlatform();
         // Select the default platform and create a context using this platform and the GPU
-#ifdef LINUX_OS
+#ifdef OS_LNX
         cl_context_properties cps[] = {
             CL_GL_CONTEXT_KHR, (cl_context_properties)glfwGetGLXContext(window),
             CL_GLX_DISPLAY_KHR, (cl_context_properties)glfwGetX11Display(),
@@ -130,7 +121,7 @@ int main(void)
             0
         };
 #endif
-#ifdef WINDOWS_OS
+#ifdef OS_WIN
         cl_context_properties cps[] = {
             CL_GL_CONTEXT_KHR, (cl_context_properties)glfwGetWGLContext(window),
             CL_WGL_HDC_KHR, (cl_context_properties)GetDC(glfwGetWin32Window(window)),
@@ -147,18 +138,18 @@ int main(void)
         }
         // Create a command queue and use the first device
         params.q = CommandQueue(context, params.d);
-#ifdef WINDOWS_OS
+#ifdef OS_WIN
         params.p = getProgram(context,"fractal.cl",errCode);
 #else
-        params.p = getProgram(context,"./Fractal/fractal.cl",errCode);
+        params.p = getProgram(context,"./examples/fractal.cl",errCode);
 #endif
         params.p.build(devices);
         params.k = Kernel(params.p, "fractal");
         // create opengl stuff
-#ifdef WINDOWS_OS
+#ifdef OS_WIN
         rparams.prg = initShaders("vertex.glsl","fragment.glsl");
 #else
-        rparams.prg = initShaders("./Fractal/vertex.glsl","./Fractal/fragment.glsl");
+        rparams.prg = initShaders("./examples/vertex.glsl","./examples/fragment.glsl");
 #endif
         rparams.tex = createTexture2D(wind_width,wind_height);
         GLuint vbo  = createBuffer(12,vertices,GL_STATIC_DRAW);
