@@ -138,19 +138,11 @@ int main(void)
         }
         // Create a command queue and use the first device
         params.q = CommandQueue(context, params.d);
-#ifdef OS_WIN
-        params.p = getProgram(context,"fractal.cl",errCode);
-#else
-        params.p = getProgram(context,"./examples/fractal.cl",errCode);
-#endif
+        params.p = getProgram(context, ASSETS_DIR"/fractal.cl",errCode);
         params.p.build(devices);
         params.k = Kernel(params.p, "fractal");
         // create opengl stuff
-#ifdef OS_WIN
-        rparams.prg = initShaders("vertex.glsl","fragment.glsl");
-#else
-        rparams.prg = initShaders("./examples/vertex.glsl","./examples/fragment.glsl");
-#endif
+        rparams.prg = initShaders(ASSETS_DIR"/fractal.vert", ASSETS_DIR"/fractal.frag");
         rparams.tex = createTexture2D(wind_width,wind_height);
         GLuint vbo  = createBuffer(12,vertices,GL_STATIC_DRAW);
         GLuint tbo  = createBuffer(8,texcords,GL_STATIC_DRAW);

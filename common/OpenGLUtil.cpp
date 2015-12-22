@@ -19,6 +19,7 @@ char* loadFile(const char *fname, GLint &fSize)
     }
 
     std::cout << "Unable to open file " << fname << std::endl;
+    return NULL;
 }
 
 void printShaderInfoLog(GLint shader)
