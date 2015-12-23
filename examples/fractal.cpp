@@ -129,17 +129,20 @@ int main(void)
             0
         };
 #endif
-        Context context(CL_DEVICE_TYPE_GPU, cps);
+        std::vector<Device> devices;
+        lPlatform.getDevices(CL_DEVICE_TYPE_GPU, &devices);
         // Get a list of devices on this platform
-        std::vector<Device> devices = context.getInfo<CL_CONTEXT_DEVICES>();
-        params.d = devices[0];
-        if (!checkExtnAvailability(params.d,CL_GL_SHARING_EXT)) {
-            return 251;
+        for (unsigned d=0; d<devices.size(); ++d) {
+            if (checkExtnAvailability(devices[d],CL_GL_SHARING_EXT)) {
+                params.d = devices[d];
+                break;
+            }
         }
+        Context context(params.d, cps);
         // Create a command queue and use the first device
         params.q = CommandQueue(context, params.d);
         params.p = getProgram(context, ASSETS_DIR"/fractal.cl",errCode);
-        params.p.build(devices);
+        params.p.build(std::vector<Device>(1, params.d));
         params.k = Kernel(params.p, "fractal");
         // create opengl stuff
         rparams.prg = initShaders(ASSETS_DIR"/fractal.vert", ASSETS_DIR"/fractal.frag");

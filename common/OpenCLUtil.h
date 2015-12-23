@@ -12,6 +12,7 @@ static const std::string CL_GL_SHARING_EXT = "cl_khr_gl_sharing";
 
 static const std::string NVIDIA_PLATFORM = "NVIDIA";
 static const std::string AMD_PLATFORM = "AMD";
+static const std::string MESA_PLATFORM = "Clover";
 static const std::string INTEL_PLATFORM = "Intel";
 static const std::string APPLE_PLATFORM = "Apple";
 
