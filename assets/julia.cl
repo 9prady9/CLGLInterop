@@ -3,15 +3,20 @@
 constant unsigned MAX_ITERS = 512;
 constant unsigned NUM_COLORS = 257; // 257 colors are there in spectrum map defined in colormaps.h
 
-constant float2 JULIA_SET[5] = {
+constant float2 JULIA_SET[10] = {
     (float2)(-0.700f, 0.270f),
     (float2)(-0.618f, 0.000f),
     (float2)(-0.400f, 0.600f),
     (float2)( 0.285f, 0.000f),
-    (float2)( 0.285f, 0.010f)
+    (float2)( 0.285f, 0.010f),
+    (float2)( 0.450f, 0.143f),
+    (float2)(-0.702f,-0.384f),
+    (float2)(-0.835f,-0.232f),
+    (float2)(-0.800f, 0.156f),
+    (float2)( 0.279f, 0.000f)
 };
 
-int juliaSet(float2 coords, int set)
+int isInside(float2 coords, int set)
 {
 	float2 C = JULIA_SET[set];
     float2 temp;
@@ -32,8 +37,8 @@ int juliaSet(float2 coords, int set)
 }
 
 kernel
-void fractal(write_only image2d_t out, int dim0, int dim1,
-             int set, int zoom, int movex, int movey)
+void julia(write_only image2d_t out, int dim0, int dim1,
+           int set, int zoom, int movex, int movey)
 {
     const int gx = get_global_id(0);
     const int gy = get_global_id(1);
@@ -46,7 +51,7 @@ void fractal(write_only image2d_t out, int dim0, int dim1,
     npos += (float2)(movex, movey);
 
     if (gx<dim0 && gy<dim1) {
-        int iteration   = juliaSet(npos, set);
+        int iteration   = isInside(npos, set);
         int colorIndex  = iteration%NUM_COLORS;
         write_imagef(out, (int2)(gx,gy), SPECTRUM[NUM_COLORS-1-colorIndex]);
     }

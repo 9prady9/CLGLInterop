@@ -85,8 +85,29 @@ static void glfw_error_callback(int error, const char* desc)
 
 static void glfw_key_callback(GLFWwindow* wind, int key, int scancode, int action, int mods)
 {
-    if (key == GLFW_KEY_ESCAPE && action == GLFW_PRESS) {
-        glfwSetWindowShouldClose(wind, GL_TRUE);
+    if (action == GLFW_PRESS) {
+        if (key == GLFW_KEY_ESCAPE)
+            glfwSetWindowShouldClose(wind, GL_TRUE);
+        else if (key == GLFW_KEY_1)
+            gJuliaSetIndex = 0;
+        else if (key == GLFW_KEY_2)
+            gJuliaSetIndex = 1;
+        else if (key == GLFW_KEY_3)
+            gJuliaSetIndex = 2;
+        else if (key == GLFW_KEY_4)
+            gJuliaSetIndex = 3;
+        else if (key == GLFW_KEY_5)
+            gJuliaSetIndex = 4;
+        else if (key == GLFW_KEY_6)
+            gJuliaSetIndex = 5;
+        else if (key == GLFW_KEY_7)
+            gJuliaSetIndex = 6;
+        else if (key == GLFW_KEY_8)
+            gJuliaSetIndex = 7;
+        else if (key == GLFW_KEY_9)
+            gJuliaSetIndex = 8;
+        else if (key == GLFW_KEY_Q)
+            gJuliaSetIndex = 9;
     }
 }
 
@@ -98,23 +119,27 @@ static void glfw_framebuffer_size_callback(GLFWwindow* wind, int width, int heig
 void processTimeStep(void);
 void renderFrame(void);
 
-int main(int argc, char** argv)
+int main()
 {
-    gJuliaSetIndex = (argc==2 ? atoi(argv[1]) : 0);
-
-    if (gJuliaSetIndex > 4) {
-        std::cout << "Invalid set index, can take only values [0-4]" << std::endl;
-        exit(256);
-    }
-
-    GLFWwindow* window;
-
     if (!glfwInit())
         return 255;
 
+          GLFWmonitor* monitor = glfwGetPrimaryMonitor();
+    const GLFWvidmode* mode    = glfwGetVideoMode(monitor);
+
+    glfwWindowHint(GLFW_RED_BITS    , mode->redBits    );
+    glfwWindowHint(GLFW_GREEN_BITS  , mode->greenBits  );
+    glfwWindowHint(GLFW_BLUE_BITS   , mode->blueBits   );
+    glfwWindowHint(GLFW_REFRESH_RATE, mode->refreshRate);
+
+    wind_width  = mode->width;
+    wind_height = mode->height;
+
+    GLFWwindow* window;
+
     glfwSetErrorCallback(glfw_error_callback);
 
-    window = glfwCreateWindow(wind_width,wind_height,"CLGL",NULL,NULL);
+    window = glfwCreateWindow(wind_width,wind_height,"Julia Sets",monitor,NULL);
     if (!window) {
         glfwTerminate();
         return 254;
@@ -159,15 +184,15 @@ int main(int argc, char** argv)
         Context context(params.d, cps);
         // Create a command queue and use the first device
         params.q = CommandQueue(context, params.d);
-        params.p = getProgram(context, ASSETS_DIR "/fractal.cl",errCode);
+        params.p = getProgram(context, ASSETS_DIR "/julia.cl",errCode);
 
         std::ostringstream options;
         options << "-I " << std::string(ASSETS_DIR);
 
         params.p.build(std::vector<Device>(1, params.d), options.str().c_str());
-        params.k = Kernel(params.p, "fractal");
+        params.k = Kernel(params.p, "julia");
         // create opengl stuff
-        rparams.prg = initShaders(ASSETS_DIR "/fractal.vert", ASSETS_DIR "/fractal.frag");
+        rparams.prg = initShaders(ASSETS_DIR "/julia.vert", ASSETS_DIR "/julia.frag");
         rparams.tex = createTexture2D(wind_width,wind_height);
         GLuint vbo  = createBuffer(12,vertices,GL_STATIC_DRAW);
         GLuint tbo  = createBuffer(8,texcords,GL_STATIC_DRAW);
