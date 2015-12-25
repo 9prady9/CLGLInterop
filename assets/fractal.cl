@@ -1,40 +1,50 @@
+#include <colormaps.h>
 
-constant float2 setK = (float2)(-0.618f,0.0f);
+constant unsigned MAX_ITERS = 256;
+constant unsigned NUM_COLORS = 257; // 257 colors are there in spectrum map defined in colormaps.h
 
-bool isInsideJulia(float2 coords,int set)
+constant float2 JULIA_SET[4] = {
+    (float2)(-0.618f, 0.000f),
+    (float2)(-0.400f, 0.600f),
+    (float2)( 0.285f, 0.000f),
+    (float2)( 0.285f, 0.010f)
+};
+
+int juliaSet(float2 coords, int set)
 {
-    //FIXME parameter set is not used right now
-	float2 C = setK;
+	float2 C = JULIA_SET[set];
     float2 temp;
-    // Transform params into (-1,1) range // 1.5 is scale factor
-    // Julia Set
-	float2 transformed = 2*(coords-(float2)0.5f);
 
-    for(unsigned int k=0; k<18; k++)
+    for(unsigned i=0; i<MAX_ITERS; i++)
     {
-        temp.s0 = (transformed.s0*transformed.s0-transformed.s1*transformed.s1) + C.s0;
-        temp.s1 = 2*transformed.s0*transformed.s1 + C.s1;
-		transformed = temp;
-        if( dot(transformed,transformed) > 500 )
-            return false;
+        temp.s0 = (coords.s0 * coords.s0 - coords.s1 * coords.s1) + C.s0;
+        temp.s1 = 2 * coords.s0 * coords.s1 + C.s1;
+		coords  = temp;
+
+        if(dot(coords, coords) > 2) {
+            return i;
+        }
     }
-    return true;
+
+    return MAX_ITERS;
 }
 
 kernel
-void fractal(write_only image2d_t out,
-             global const uchar4* in,
-             int dim0, int dim1, int dim2)
+void fractal(write_only image2d_t out, int dim0, int dim1, int set)
 {
-	float4 orange = (float4)(1.0f,0.8f,0,1.0f);
-	float4 white = (float4)(1.0f,0.9f,0.9f,1.0f);
-    // dims 0 - width, 1 - height, 2 - channels
-    int gx = get_global_id(0);
-    int gy = get_global_id(1);
-    int2 pos = (int2)(gx,gy);
+    const int gx = get_global_id(0);
+    const int gy = get_global_id(1);
+
+    float h0 = dim0/2.0f;
+    float h1 = dim1/2.0f;
+
+    float2 npos = (float2)((h0-gx)/h0, (h1-gy)/gy);
     if (gx<dim0 && gy<dim1) {
-        float2 normalizedPos = (float2)(pos.s0/(float)dim0,pos.s1/(float)dim1);
-        float4 opxl = isInsideJulia(normalizedPos,0) ? orange : white;
-        write_imagef (out,pos,opxl);
+        int iteration   = juliaSet(2.0f*npos, set);
+        float stepValue = (float)iteration/(float)MAX_ITERS;
+        int colorIndex  = stepValue * NUM_COLORS;
+        int nextColor   = (colorIndex+1)%NUM_COLORS;
+        float4 color    = smoothstep(SPECTRUM[colorIndex], SPECTRUM[nextColor], stepValue);
+        write_imagef(out, (int2)(gx,gy), color);
     }
 }
