@@ -30,23 +30,34 @@ using namespace cl;
 
 typedef unsigned int uint;
 
-static int wind_width = 648;
-static int wind_height= 648;
+static int wind_width = 720;
+static int wind_height= 720;
 static int gJuliaSetIndex = 0;
 
-static const float matrix[16] = {
+static const float matrix[16] =
+{
     1.0f, 0.0f, 0.0f, 0.0f,
     0.0f, 1.0f, 0.0f, 0.0f,
     0.0f, 0.0f, 1.0f, 0.0f,
-    0.0f, 0.0f, 0.0f, 1.0f};
+    0.0f, 0.0f, 0.0f, 1.0f
+};
 
+static const float vertices[12] =
+{
+    -1.0f,-1.0f, 0.0,
+     1.0f,-1.0f, 0.0,
+     1.0f, 1.0f, 0.0,
+    -1.0f, 1.0f, 0.0
+};
 
-static const float vertices[12] = {
-    -1.0f,-1.0f,0.0,
-    1.0f,-1.0f,0.0,
-    1.0f, 1.0f,0.0,
-    -1.0f, 1.0f,0.0};
-static const float texcords[8] = {0.0,1.0,1.0,1.0,1.0,0.0,0.0,0.0};
+static const float texcords[8] =
+{
+    0.0, 1.0,
+    1.0, 1.0,
+    1.0, 0.0,
+    0.0, 0.0
+};
+
 static const uint indices[6] = {0,1,2,0,2,3};
 
 typedef struct {
@@ -91,8 +102,8 @@ int main(int argc, char** argv)
 {
     gJuliaSetIndex = (argc==2 ? atoi(argv[1]) : 0);
 
-    if (gJuliaSetIndex > 3) {
-        std::cout << "Invalid set index, can take only values [0-3]" << std::endl;
+    if (gJuliaSetIndex > 4) {
+        std::cout << "Invalid set index, can take only values [0-4]" << std::endl;
         exit(256);
     }
 
@@ -237,13 +248,16 @@ void processTimeStep()
             exit(248);
         }
         NDRange local(16, 16);
-        NDRange global( 16 * divup(params.dims[0], 16),
-                        16 * divup(params.dims[1], 16));
+        NDRange global( local[0] * divup(params.dims[0], local[0]),
+                        local[1] * divup(params.dims[1], local[1]));
         // set kernel arguments
         params.k.setArg(0,params.tex);
         params.k.setArg(1,(int)params.dims[0]);
         params.k.setArg(2,(int)params.dims[1]);
         params.k.setArg(3,gJuliaSetIndex);
+        params.k.setArg(4,1);
+        params.k.setArg(5,0);
+        params.k.setArg(6,0);
         params.q.enqueueNDRangeKernel(params.k,cl::NullRange, global, local);
         // release opengl object
         res = params.q.enqueueReleaseGLObjects(&objs);
