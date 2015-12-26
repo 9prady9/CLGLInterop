@@ -280,7 +280,7 @@ void processTimeStep()
         params.k.setArg(1,(int)params.dims[0]);
         params.k.setArg(2,(int)params.dims[1]);
         params.k.setArg(3,gJuliaSetIndex);
-        params.k.setArg(4,1);
+        params.k.setArg(4,0.9f);
         params.k.setArg(5,0);
         params.k.setArg(6,0);
         params.q.enqueueNDRangeKernel(params.k,cl::NullRange, global, local);
