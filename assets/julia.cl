@@ -38,7 +38,7 @@ int isInside(float2 coords, int set)
 
 kernel
 void julia(write_only image2d_t out, int dim0, int dim1,
-           int set, float zoom, int movex, int movey)
+           int set, float scalex, float scaley, float movex, float movey)
 {
     const int gx = get_global_id(0);
     const int gy = get_global_id(1);
@@ -46,9 +46,11 @@ void julia(write_only image2d_t out, int dim0, int dim1,
     float h0 = dim0/2.0f;
     float h1 = dim1/2.0f;
 
-    float2 npos = (float2)((gx-h0)/(zoom*h0), (gy-h1)/(zoom*h1));
+    float2 scale     = (float2)(scalex, scaley);
+    float2 translate = (float2)(movex, movey);
+    float2 npos      = (float2)((gx-h0)/h0, (gy-h1)/h1);
 
-    npos += (float2)(movex, movey);
+    npos = npos * scale + translate;
 
     if (gx<dim0 && gy<dim1) {
         int iteration   = isInside(npos, set);
