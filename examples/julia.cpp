@@ -30,9 +30,7 @@ using namespace cl;
 
 typedef unsigned int uint;
 
-static int wind_width = 720;
-static int wind_height= 720;
-static int gJuliaSetIndex = 0;
+static const uint NUM_JSETS = 9;
 
 static const float matrix[16] =
 {
@@ -59,6 +57,23 @@ static const float texcords[8] =
 };
 
 static const uint indices[6] = {0,1,2,0,2,3};
+
+static const float CJULIA[] = {
+    -0.700f, 0.270f,
+    -0.618f, 0.000f,
+    -0.400f, 0.600f,
+     0.285f, 0.000f,
+     0.285f, 0.010f,
+     0.450f, 0.143f,
+    -0.702f,-0.384f,
+    -0.835f,-0.232f,
+    -0.800f, 0.156f,
+     0.279f, 0.000f
+};
+
+static int wind_width = 720;
+static int wind_height= 720;
+static int gJuliaSetIndex = 0;
 
 typedef struct {
     Device d;
@@ -106,8 +121,6 @@ static void glfw_key_callback(GLFWwindow* wind, int key, int scancode, int actio
             gJuliaSetIndex = 7;
         else if (key == GLFW_KEY_9)
             gJuliaSetIndex = 8;
-        else if (key == GLFW_KEY_Q)
-            gJuliaSetIndex = 9;
     }
 }
 
@@ -184,15 +197,15 @@ int main()
         Context context(params.d, cps);
         // Create a command queue and use the first device
         params.q = CommandQueue(context, params.d);
-        params.p = getProgram(context, ASSETS_DIR "/julia.cl",errCode);
+        params.p = getProgram(context, ASSETS_DIR "/fractal.cl",errCode);
 
         std::ostringstream options;
         options << "-I " << std::string(ASSETS_DIR);
 
         params.p.build(std::vector<Device>(1, params.d), options.str().c_str());
-        params.k = Kernel(params.p, "julia");
+        params.k = Kernel(params.p, "fractal");
         // create opengl stuff
-        rparams.prg = initShaders(ASSETS_DIR "/julia.vert", ASSETS_DIR "/julia.frag");
+        rparams.prg = initShaders(ASSETS_DIR "/fractal.vert", ASSETS_DIR "/fractal.frag");
         rparams.tex = createTexture2D(wind_width,wind_height);
         GLuint vbo  = createBuffer(12,vertices,GL_STATIC_DRAW);
         GLuint tbo  = createBuffer(8,texcords,GL_STATIC_DRAW);
@@ -276,14 +289,15 @@ void processTimeStep()
         NDRange global( local[0] * divup(params.dims[0], local[0]),
                         local[1] * divup(params.dims[1], local[1]));
         // set kernel arguments
-        params.k.setArg(0,params.tex);
-        params.k.setArg(1,(int)params.dims[0]);
-        params.k.setArg(2,(int)params.dims[1]);
-        params.k.setArg(3,gJuliaSetIndex);
-        params.k.setArg(4,1.0f);
-        params.k.setArg(5,1.0f);
-        params.k.setArg(6,0.0f);
-        params.k.setArg(7,0.0f);
+        params.k.setArg(0, params.tex);
+        params.k.setArg(1, (int)params.dims[0]);
+        params.k.setArg(2, (int)params.dims[1]);
+        params.k.setArg(3, 1.0f);
+        params.k.setArg(4, 1.0f);
+        params.k.setArg(5, 0.0f);
+        params.k.setArg(6, 0.0f);
+        params.k.setArg(7, CJULIA[2*gJuliaSetIndex+0]);
+        params.k.setArg(8, CJULIA[2*gJuliaSetIndex+1]);
         params.q.enqueueNDRangeKernel(params.k,cl::NullRange, global, local);
         // release opengl object
         res = params.q.enqueueReleaseGLObjects(&objs);
