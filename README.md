@@ -1,6 +1,6 @@
-###OpenCL-OpenGL Interop Examples
+### OpenCL-OpenGL Interop Examples
 
-####Requirements
+#### Requirements
 
 * CMake (>= 3.0.2)
 * OpenCL Libraries (should be located by CMake automatically if they are installed using package
@@ -16,5 +16,5 @@ More examples will be added progressively. Current list of examples is given bel
   frame. This example uses intermediate buffer to copy data from OpenCL buffer to OpenGL vertex
 buffer object.
 
-####Note
+#### Note
 All examples are by default built for 64-bit machines. If you have need 32-bit executables, please modify the necessary options and rebuild the source files.
