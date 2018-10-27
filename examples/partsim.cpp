@@ -1,4 +1,4 @@
-#include <GL/glew.h>
+#include <glad/glad.h>
 
 #include "OpenCLUtil.h"
 #define __CL_ENABLE_EXCEPTIONS
@@ -99,11 +99,11 @@ int main(void)
     }
 
     glfwMakeContextCurrent(window);
-    GLenum res = glewInit();
-    if (res!=GLEW_OK) {
-        std::cout<<"Error Initializing GLEW | Exiting"<<std::endl;
+    if(!gladLoadGL()) {
+        printf("gladLoadGL failed!\n");
         return 253;
     }
+    printf("OpenGL %d.%d\n", GLVersion.major, GLVersion.minor);
 
     cl_int errCode;
     try {

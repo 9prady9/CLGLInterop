@@ -1,8 +1,7 @@
 #ifndef __OPENGL_UTIL_H__
 #define __OPENGL_UTIL_H__
 
-#include <GL/glew.h>
-#include <GL/gl.h>
+#include <glad/glad.h>
 
 typedef struct {
     GLuint vertex;

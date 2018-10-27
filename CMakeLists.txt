@@ -1,98 +1,100 @@
-CMAKE_MINIMUM_REQUIRED(VERSION 3.0.2)
+cmake_minimum_required(VERSION 3.0.2)
 
-PROJECT(CLGLInterop)
+project(CLGLInterop)
 
 SET_PROPERTY(GLOBAL PROPERTY USE_FOLDERS ON)
 
-SET(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_CURRENT_SOURCE_DIR}/CMakeModules")
-SET(ASSETS_DIR "${CMAKE_CURRENT_SOURCE_DIR}/assets")
+set(CMAKE_CXX_STANDARD 11)
+set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_CURRENT_SOURCE_DIR}/CMakeModules")
+set(ASSETS_DIR "${CMAKE_CURRENT_SOURCE_DIR}/assets")
 
 # Set a default build type if none was specified
-IF(NOT CMAKE_BUILD_TYPE AND NOT CMAKE_CONFIGURATION_TYPES)
+if(NOT CMAKE_BUILD_TYPE AND NOT CMAKE_CONFIGURATION_TYPES)
     SET(CMAKE_BUILD_TYPE Release CACHE STRING "Choose the type of build." FORCE)
     # Set the possible values of build type for cmake-gui
     SET_PROPERTY(CACHE CMAKE_BUILD_TYPE PROPERTY STRINGS "Debug" "Release"
         "MinSizeRel" "RelWithDebInfo")
-ENDIF()
+endif()
 
-ADD_DEFINITIONS("-DASSETS_DIR=\"${ASSETS_DIR}\"")
+add_definitions("-DASSETS_DIR=\"${ASSETS_DIR}\"")
 
-IF(UNIX)
-    ADD_DEFINITIONS(-Wall -std=c++11 -fvisibility=hidden)
-ENDIF()
+if(UNIX)
+    add_definitions(-Wall -fvisibility=hidden)
+endif()
 
 # OS Definitions
-IF(UNIX)
-    IF(APPLE)
-        ADD_DEFINITIONS(-DOS_MAC)
-        SET(CMAKE_MACOSX_RPATH ON)
-        SET(CMAKE_SKIP_BUILD_RPATH  FALSE)
-        SET(CMAKE_BUILD_WITH_INSTALL_RPATH FALSE)
-        SET(CMAKE_INSTALL_RPATH "${CMAKE_INSTALL_PREFIX}")
-        SET(CMAKE_INSTALL_RPATH_USE_LINK_PATH TRUE)
+if(UNIX)
+    if(APPLE)
+        add_definitions(-DOS_MAC)
+        set(CMAKE_MACOSX_RPATH ON)
+        set(CMAKE_SKIP_BUILD_RPATH  FALSE)
+        set(CMAKE_BUILD_WITH_INSTALL_RPATH FALSE)
+        set(CMAKE_INSTALL_RPATH "${CMAKE_INSTALL_PREFIX}")
+        set(CMAKE_INSTALL_RPATH_USE_LINK_PATH TRUE)
 
-        LIST(FIND CMAKE_PLATFORM_IMPLICIT_LINK_DIRECTORIES "${CMAKE_INSTALL_PREFIX}" isSystemDir)
-        IF("${isSystemDir}" STREQUAL "-1")
-            SET(CMAKE_INSTALL_RPATH "${CMAKE_INSTALL_PREFIX}")
-        ENDIF("${isSystemDir}" STREQUAL "-1")
-    ELSE(APPLE)
-        ADD_DEFINITIONS(-DOS_LNX)
-    ENDIF(APPLE)
-ELSE(UNIX)
-    ADD_DEFINITIONS(-DOS_WIN -DNOMINMAX)
-ENDIF(UNIX)
+        list(FIND CMAKE_PLATFORM_IMPLICIT_LINK_DIRECTORIES "${CMAKE_INSTALL_PREFIX}" isSystemDir)
+        if("${isSystemDir}" STREQUAL "-1")
+            set(CMAKE_INSTALL_RPATH "${CMAKE_INSTALL_PREFIX}")
+        endif("${isSystemDir}" STREQUAL "-1")
+    else(APPLE)
+        add_definitions(-DOS_LNX)
+    endif(APPLE)
+else(UNIX)
+    add_definitions(-DOS_WIN -DNOMINMAX)
+endif(UNIX)
 
-SET(X11_LIBS "")
-IF(APPLE)
-    FIND_PACKAGE(X11 REQUIRED)
-    INCLUDE_DIRECTORIES(${X11_INCLUDE_DIR})
-    SET(X11_LIBS ${X11_LIBRARIES})
-ENDIF(APPLE)
+set(X11_LIBS "")
+if(APPLE)
+    find_package(X11 REQUIRED)
+    include_directories(${X11_INCLUDE_DIR})
+    set(X11_LIBS ${X11_LIBRARIES})
+endif(APPLE)
 
-FIND_PACKAGE(GLEW REQUIRED)
-FIND_PACKAGE(OpenGL REQUIRED)
-FIND_PACKAGE(GLFW REQUIRED)
-FIND_PACKAGE(OpenCL REQUIRED)
+find_package(OpenGL REQUIRED)
+find_package(GLFW REQUIRED)
+find_package(OpenCL REQUIRED)
 
-IF(OpenCL_FOUND)
-    IF(${OpenCL_VERSION_MAJOR} EQUAL 1 AND ${OpenCL_VERSION_MINOR} LESS 2)
-        MESSAGE(FATAL_ERROR "At least OpenCL 1.2 version required")
+add_subdirectory(external_sources/glad)
+
+if(OpenCL_FOUND)
+    if(${OpenCL_VERSION_MAJOR} EQUAL 1 AND ${OpenCL_VERSION_MINOR} LESS 2)
+        message(FATAL_ERROR "At least OpenCL 1.2 version required")
     ENDIF()
-ENDIF()
+endif()
 
-INCLUDE_DIRECTORIES(
-    ${GLEW_INCLUDE_DIRS}
+include_directories(
     ${OPENGL_INCLUDE_DIR}
     ${GLFW_INCLUDE_DIR}
     ${OpenCL_INCLUDE_DIRS}
     "${CMAKE_SOURCE_DIR}/common"
     )
 
-FILE(GLOB common_src "common/*.cpp")
-FILE(GLOB examples_src "examples/*.cpp")
+file(GLOB common_src "common/*.cpp")
+file(GLOB examples_src "examples/*.cpp")
 
-MACRO(BUILD_EXAMPLE EXAMPLE_NAME EXAMPLE_SOURCE OUT_DIR_NAME)
-    ADD_EXECUTABLE(${EXAMPLE_NAME}
+macro(BUILD_EXAMPLE EXAMPLE_NAME EXAMPLE_SOURCE OUT_DIR_NAME)
+    add_executable(${EXAMPLE_NAME}
         ${EXAMPLE_SOURCE}
         ${common_src}
         )
-    TARGET_LINK_LIBRARIES(${EXAMPLE_NAME}
-        PRIVATE ${GLEW_LIBRARIES}
+    target_link_libraries(${EXAMPLE_NAME}
         PRIVATE ${OPENGL_LIBRARIES}
         PRIVATE ${GLFW_LIBRARY}
         PRIVATE ${OpenCL_LIBRARIES}
         PRIVATE ${X11_LIBS}
+        PRIVATE ${CMAKE_DL_LIBS}
+        PRIVATE glad-interface
         )
-    SET_TARGET_PROPERTIES(${EXAMPLE_NAME}
+    set_target_properties(${EXAMPLE_NAME}
         PROPERTIES
         OUTPUT_NAME ${EXAMPLE_NAME}
         RUNTIME_OUTPUT_DIRECTORY ${OUT_DIR_NAME}
         FOLDER "CLGL-Examples")
-ENDMACRO()
+endmacro()
 
-FOREACH(FILE ${examples_src})
-    GET_FILENAME_COMPONENT(EXAMPLE ${FILE} NAME_WE)
-    GET_FILENAME_COMPONENT(FULL_DIR_NAME ${FILE} PATH)
-    GET_FILENAME_COMPONENT(DIR_NAME ${FULL_DIR_NAME} NAME)
+foreach(FILE ${examples_src})
+    get_filename_component(EXAMPLE ${FILE} NAME_WE)
+    get_filename_component(FULL_DIR_NAME ${FILE} PATH)
+    get_filename_component(DIR_NAME ${FULL_DIR_NAME} NAME)
     BUILD_EXAMPLE(${EXAMPLE} ${FILE} ${DIR_NAME})
-ENDFOREACH()
+endforeach()
