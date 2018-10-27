@@ -5,7 +5,7 @@
 * CMake (>= 3.0.2)
 * OpenCL Libraries (should be located by CMake automatically if they are installed using package
   managers)
-* GLFW, GLEW - Both should be automatically found by CMake.
+* GLFW, Both should be automatically found by CMake.
 
 More examples will be added progressively. Current list of examples is given below.
 
