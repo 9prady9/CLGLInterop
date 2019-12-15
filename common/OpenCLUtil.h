@@ -1,8 +1,16 @@
 #ifndef __OPENCL_UTIL_H__
 #define __OPENCL_UTIL_H__
 
-#define __CL_ENABLE_EXCEPTIONS
-#include "cl.hpp"
+#define CL_HPP_ENABLE_EXCEPTIONS
+#define CL_HPP_MINIMUM_OPENCL_VERSION 120
+#define CL_HPP_TARGET_OPENCL_VERSION 120
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wunused-function"
+#pragma GCC diagnostic ignored "-Wunused-parameter"
+#pragma GCC diagnostic ignored "-Wignored-qualifiers"
+#pragma GCC diagnostic ignored "-Wdeprecated-declarations"
+#include <CL/cl2.hpp>
+#pragma GCC diagnostic pop
 
 #if defined (__APPLE__) || defined(MACOSX)
 static const std::string CL_GL_SHARING_EXT = "cl_APPLE_gl_sharing";

@@ -1,8 +1,6 @@
 #include <glad/glad.h>
 
-#include "OpenCLUtil.h"
-#define __CL_ENABLE_EXCEPTIONS
-#include "cl.hpp"
+#include <common/OpenCLUtil.h>
 
 #ifdef OS_WIN
 #define GLFW_EXPOSE_NATIVE_WIN32
@@ -17,7 +15,7 @@
 #include <GLFW/glfw3.h>
 #include <GLFW/glfw3native.h>
 
-#include "OpenGLUtil.h"
+#include <common/OpenGLUtil.h>
 
 #include <cstdlib>
 #include <iostream>
@@ -50,7 +48,7 @@ typedef struct {
     Program p;
     Kernel k;
     Buffer i;
-    cl::size_t<3> dims;
+    size_t dims[3];
 } process_params;
 
 typedef struct {

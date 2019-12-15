@@ -1,4 +1,4 @@
-#include "OpenGLUtil.h"
+#include <common/OpenGLUtil.h>
 
 #include <iostream>
 #include <fstream>

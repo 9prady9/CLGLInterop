@@ -1,4 +1,4 @@
-#include "OpenCLUtil.h"
+#include <common/OpenCLUtil.h>
 
 #include <vector>
 #include <cstdlib>
@@ -98,8 +98,7 @@ Program getProgram(Context pContext, std::string file, cl_int &error)
             std::istreambuf_iterator<char>(sourceFile),
             (std::istreambuf_iterator<char>()));
     try {
-        Program::Sources source(1, std::make_pair(sourceCode.c_str(), sourceCode.length()+1));
-        // Make program of the source code in the context
+        Program::Sources source(1, sourceCode);
         ret_val = Program(pContext, source);
     } catch(Error err) {
         std::cout << err.what() << "(" << err.err() << ")" << std::endl;
