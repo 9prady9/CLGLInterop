@@ -2,10 +2,9 @@
 
 #### Requirements
 
-* CMake (>= 3.0.2)
-* OpenCL Libraries (should be located by CMake automatically if they are installed using package
-  managers)
-* GLFW, Both should be automatically found by CMake.
+* CMake (>= 3.16.2)
+* OpenCL (>= 1.2)
+* GLFW (3.3)
 
 More examples will be added progressively. Current list of examples is given below.
 
