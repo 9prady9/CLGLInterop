@@ -2,7 +2,7 @@
 
 #### Requirements
 
-* CMake (>= 3.16.2)
+* CMake (>= 3.16.1)
 * OpenCL (>= 1.2)
 * GLFW (3.3)
 
